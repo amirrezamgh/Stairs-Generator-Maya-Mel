@@ -1,0 +1,54 @@
+  
+global string $FFname= "Number of Stair";
+  global  float $w = 120;
+  global  float $h = 18;
+  global  float $d = 30;
+global proc FF_Changed (){
+    global string $FFname;
+    $value = `floatField -q -value $FFname`;
+    $w = `floatField -q -value wValue`;
+    $h = `floatField -q -value hValue`;
+    $d = `floatField -q -value dValue`;
+    polyCube -ch on -o on -w $w -h $h -d $d -cuv 4 -n stairCube1;
+    select -r stairCube1.f[3] ;
+    select -tgl stairCube1.f[0] ;
+    doDelete;
+    select stairCube1;
+    move -rpr ($w/2) (-$h/2) (-$d/2) stairCube1.scalePivot stairCube1.rotatePivot ;
+    duplicate -rr;
+    move -rpr ($w/2) ($h/2) ($d/2) ;
+    for ($i=1; $i<$value; ++$i) duplicate -rr -smartTransform -renameChildren; 
+    
+}
+if (`window -exists stairGE`) {
+    deleteUI stairGE;
+}
+window -t "Stair Generator" -w 200 -h 200 stairGE;
+frameLayout -l "Stairs Control" -bs "etchedIn" -cll 1 -cl 0;
+gridLayout -nc 2 -nr 5 -cwh 150 50;
+text -l "Width";
+floatField -v 120 wValue;
+text -l "Height";
+floatField -v 18 hValue;
+text -l "Depth";
+floatField -v 30 dValue;
+text -l "Number of Stairs";
+$FFname = `floatField -v 5 -changeCommand "FF_Changed"`;
+button -l "Generate Stairs" -c "FF_Changed" -bgc 0.365 1 0.365;
+button -l "delete all" -c "del_all" -bgc 1 0.365 0.365;
+text -label "Developed By" -bgc 0.365 0.365 1 ;
+text -label " Amirreza Moghaddam" -bgc 0.365 0.365 1 ;
+showWindow stairGE;
+global proc del_all(){
+    global string $FFname;
+    $value = `floatField -q -value $FFname`;
+    float $delal = $value + 1 ;
+      if (`objExists stairCube1`){
+    print "yes";
+    int $b = 1;
+} int $b = 1;
+for ($b==1; $b<$delal; $b++){
+    select -add ("stairCube" + $b);
+    doDelete;
+}
+}
