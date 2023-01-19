@@ -1,0 +1,89 @@
+  /////////////////////////////////////// 
+//  Develeper: Amirreza Moghaddam    //        
+//  Email: amirmoghadam716@yahoo.com //        
+///////////////////////////////////////    
+
+  global string $FFname= "Number of Stair";
+  global  float $w = 120;
+  global  float $h = 18;
+  global  float $d = 30;
+global proc FF_Changed (){
+    group -em -n Final_stairs;
+    select -r Final_stairs;
+    doDelete;
+    global string $FFname;
+    $value = `floatField -q -value $FFname`;
+    $w = `floatField -q -value wValue`;
+    $h = `floatField -q -value hValue`;
+    $d = `floatField -q -value dValue`;
+    polyCube -ch on -o on -w $w -h $h -d $d -cuv 4 -n stairCube1;
+    select -r stairCube1.f[3] ;
+    select -tgl stairCube1.f[0] ;
+    doDelete;
+    select stairCube1;
+    group -em -n "stairs_gp";
+    parent stairCube1 stairs_gp ;
+    move -rpr ($w/2) (-$h/2) (-$d/2) stairCube1.scalePivot stairCube1.rotatePivot ;
+    duplicate -rr;
+    move -rpr ($w/2) ($h/2) ($d/2) ;
+    for ($i=1; $i<$value; ++$i) duplicate -rr -smartTransform -renameChildren;
+    float $Nvalue = $value + 1;
+    string $bridgeStair = "stairCube" + $Nvalue;
+    vector $extrudePo1  = `pointPosition -w stairCube1.vtx[1]`;
+    vector $extrudePo2  = `pointPosition -w stairCube1.vtx[7]`;
+    //hilite -r $bridgeStair.e[3:4] ;
+     select -r $bridgeStair.e[3:4] ;
+     hilite -r $bridgeStair.e[3:4] ;
+   // select -r stairCube6.e[3:4] ;
+     polyBridgeEdge -ch 1 -divisions 0 -twist 0 -taper 1 -curveType 0 -smoothingAngle 30;
+     select -cl;
+     select -r $bridgeStair;
+     select -r $bridgeStair.e[11];
+     hilite -r $bridgeStair.e[11];
+     polyExtrudeEdge -constructionHistory 1 -keepFacesTogether 1 -pvx 0 -pvy 80.99999809 -pvz 165 -divisions 1 -twist 0 -taper 1 -offset 0 -thickness 0 -smoothingAngle 30;
+     move -a -y ($extrudePo1.y);
+     polyExtrudeEdge -constructionHistory 1 -keepFacesTogether 1 -pvx 0 -pvy 80.99999809 -pvz 165 -divisions 1 -twist 0 -taper 1 -offset 0 -thickness 0 -smoothingAngle 30;
+     move -a -z ($extrudePo1.z);
+     polyExtrudeEdge -constructionHistory 1 -keepFacesTogether 1 -pvx 0 -pvy 80.99999809 -pvz 165 -divisions 1 -twist 0 -taper 1 -offset 0 -thickness 0 -smoothingAngle 30;
+     move -a -z ($extrudePo2.z);
+     polyUnite -ch 1 -mergeUVSets 1 -centerPivot -name stairs_gp stairs_gp;
+     polyMergeVertex  -d 0.01 -am 1 -ch 1 stairs_gp1;
+     select -r stairs_gp1;
+     DeleteAllHistory; 
+     polyCloseBorder -ch 1 stairs_gp1;
+     polyTriangulate -ch 1 stairs_gp1;
+     rename "stairs_gp1" "Final_stairs";
+     select -cl;
+     select -r Final_stairs;
+
+}
+if (`window -exists stairGE`) {
+    deleteUI stairGE;
+}
+window -t "Stair Generator" -w 200 -h 200 stairGE;
+frameLayout -l "Stairs Control" -bs "etchedIn" -cll 1 -cl 0;
+gridLayout -nc 2 -nr 5 -cwh 150 50;
+text -l "Width";
+floatField -v 120 wValue;
+text -l "Height";
+floatField -v 18 hValue;
+text -l "Depth";
+floatField -v 30 dValue;
+text -l "Number of Stairs";
+$FFname = `floatField -v 5 -changeCommand "FF_Changed"`;
+button -l "Generate Stairs" -c "FF_Changed" -bgc 1 0.365 0.365;
+button -l "Finish Up" -c "del_all" -bgc 0.365 1 0.365;
+button -l "Bend" -c "bend_stair" -bgc 1 .5 1;
+text -label "Developed By \n Amirreza Moghaddam" -bgc 0.365 0.365 1 ;
+showWindow stairGE;
+global proc del_all(){
+    select -r Final_stairs;
+    DeleteAllHistory;
+    rename "Final_stairs" "stairs_final";
+}
+global proc bend_stair(){
+    select -r Final_stairs;
+    nonLinear -type bend  -lowBound -1 -highBound 1 -curvature 0;
+    rotate -r -os -fo 90 0 0 ;
+}
+
